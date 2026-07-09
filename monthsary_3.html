@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Happy Monthsary</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Caveat:wght@500;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --dusk-bg-1: #241820;
+      --dusk-bg-2: #3a1f2a;
+      --paper: #f4e9d8;
+      --paper-shadow: #e2d3ba;
+      --envelope: #8a3b4b;
+      --envelope-dark: #6e2c3a;
+      --envelope-flap: #9c4456;
+      --gold: #c9a24b;
+      --gold-bright: #e3c274;
+      --ink: #3a2a2e;
+      --ink-soft: #6b4f52;
+      --blush: #e7b6ba;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+
+    body {
+      font-family: 'EB Garamond', serif;
+      background: radial-gradient(ellipse at 50% 20%, var(--dusk-bg-2), var(--dusk-bg-1) 70%);
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--paper);
+    }
+
+    #root {
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .scene {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 40px 20px;
+    }
+
+    /* ambient floating hearts */
+    .hearts-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+      will-change: transform;
+    }
+
+    .heart {
+      position: absolute;
+      bottom: -40px;
+      opacity: 0;
+      color: var(--blush);
+      font-size: 18px;
+      animation: floatUp linear infinite;
+      will-change: transform, opacity;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+        opacity: 0;
+      }
+
+      8% {
+        opacity: .5;
+      }
+
+      92% {
+        opacity: .35;
+      }
+
+      100% {
+        transform: translate3d(var(--drift, 20px), -110vh, 0) rotate(25deg);
+        opacity: 0;
+      }
+    }
+
+    .eyebrow {
+      font-family: 'Caveat', cursive;
+      font-size: 26px;
+      color: var(--gold-bright);
+      letter-spacing: 0.5px;
+      text-align: center;
+      margin-bottom: 6px;
+      z-index: 2;
+    }
+
+    .title {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-weight: 600;
+      font-size: clamp(26px, 5vw, 40px);
+      text-align: center;
+      color: var(--paper);
+      margin: 0 0 34px 0;
+      z-index: 2;
+    }
+
+    .stage {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ENVELOPE */
+    .envelope-wrap {
+      position: relative;
+      width: min(380px, 88vw);
+      height: 250px;
+    }
+
+    .envelope-body {
+      position: absolute;
+      inset: 0;
+      top: 42px;
+      background: linear-gradient(180deg, var(--envelope), var(--envelope-dark));
+      border-radius: 4px;
+      box-shadow: 0 22px 45px -18px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(0, 0, 0, 0.08) inset;
+      z-index: 2;
+    }
+
+    .envelope-body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(115deg, transparent 49.3%, rgba(0, 0, 0, 0.14) 50%, transparent 50.7%),
+        linear-gradient(65deg, transparent 49.3%, rgba(0, 0, 0, 0.14) 50%, transparent 50.7%);
+      border-radius: 4px;
+    }
+
+    /* the letter, folded in thirds like a real inserted letter - fully hidden
+     behind the envelope body (z-index 0) until it's pulled out, when it
+     gets promoted above everything via .letter-peek.rise */
+    .letter-peek {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%) translate3d(0, 0, 0);
+      width: 76%;
+      top: 52px;
+      height: 180px;
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.06)) 0 33.3%/100% 2px no-repeat,
+        linear-gradient(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.06)) 0 66.6%/100% 2px no-repeat,
+        var(--paper);
+      border-radius: 2px;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 8px 20px rgba(0, 0, 0, 0.3);
+      transform: translateX(-50%) translate3d(0, 0, 0);
+      transition: transform 0.9s cubic-bezier(.22, .8, .25, 1), z-index 0s 0.9s;
+      z-index: 0;
+      will-change: transform;
+    }
+
+    .letter-peek.rise {
+      z-index: 6;
+      transition: transform 0.9s cubic-bezier(.22, .8, .25, 1), z-index 0s 0s;
+    }
+
+    .flap {
+      position: absolute;
+      top: 42px;
+      left: 0;
+      right: 0;
+      height: 140px;
+      z-index: 3;
+      transform-origin: top center;
+      transition: transform 0.75s cubic-bezier(.3, .85, .3, 1);
+      will-change: transform;
+    }
+
+    .flap-shape {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(160deg, var(--envelope-flap), var(--envelope));
+      box-shadow: 0 10px 20px -8px rgba(0, 0, 0, 0.5);
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+    }
+
+    .flap.opening {
+      transform: translate3d(0, -4px, 0) rotateX(155deg);
+    }
+
+    .torn-edge {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 176px;
+      height: 10px;
+      background: repeating-linear-gradient(100deg,
+          var(--paper) 0 6px,
+          transparent 6px 12px);
+      opacity: 0;
+      z-index: 2;
+    }
+
+    .torn-edge.show {
+      opacity: 1;
+    }
+
+    /* full-width drag / cut zone, spans nearly the whole envelope */
+    .cut-zone {
+      position: absolute;
+      top: 50px;
+      left: 4%;
+      right: 4%;
+      height: 60px;
+      z-index: 5;
+      touch-action: none;
+      cursor: grab;
+    }
+
+    .cut-zone:active {
+      cursor: grabbing;
+    }
+
+    .cut-line {
+      position: absolute;
+      top: 29px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.35) 0 6px, transparent 6px 12px);
+    }
+
+    .cut-line-fill {
+      position: absolute;
+      top: 29px;
+      left: 0;
+      width: 0%;
+      height: 2px;
+      background: repeating-linear-gradient(90deg, var(--gold-bright) 0 6px, transparent 6px 12px);
+    }
+
+    .scissor-handle {
+      position: absolute;
+      top: 50%;
+      left: 0px;
+      width: 34px;
+      height: 34px;
+      margin-top: -17px;
+      border-radius: 50%;
+      background: var(--paper);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      z-index: 6;
+      will-change: left;
+    }
+
+    .scissor-handle.snap-back {
+      transition: left 0.35s cubic-bezier(.3, .9, .3, 1);
+    }
+
+    .scissor-handle.hide {
+      opacity: 0;
+      transition: opacity .3s ease;
+    }
+
+    /* wax seal graphic - purely visual, centered, independent of the wide drag zone */
+    .seal-graphic {
+      position: absolute;
+      top: 107px;
+      left: 50%;
+      width: 78px;
+      height: 78px;
+      transform: translateX(-50%);
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .seal-half {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, var(--gold-bright), var(--gold) 60%, #a9822f 100%);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45), 0 0 0 2px rgba(255, 255, 255, 0.08) inset;
+      transition: transform 0.6s cubic-bezier(.2, .9, .3, 1), opacity 0.5s ease;
+      will-change: transform, opacity;
+    }
+
+    .seal-left {
+      clip-path: inset(0 50% 0 0);
+    }
+
+    .seal-right {
+      clip-path: inset(0 0 0 50%);
+    }
+
+    .seal-half.cut-left {
+      transform: translate3d(-30px, -18px, 0) rotate(-24deg);
+      opacity: 0;
+    }
+
+    .seal-half.cut-right {
+      transform: translate3d(30px, -18px, 0) rotate(24deg);
+      opacity: 0;
+    }
+
+    .seal-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate3d(-50%, -50%, 0);
+      width: 28px;
+      height: 28px;
+      opacity: 0.85;
+      transition: opacity 0.4s ease;
+    }
+
+    .seal-icon.cut {
+      opacity: 0;
+    }
+
+    .hint {
+      margin-top: 26px;
+      font-family: 'Caveat', cursive;
+      font-size: 20px;
+      color: var(--blush);
+      opacity: 0.85;
+      text-align: center;
+      z-index: 2;
+      transition: opacity .4s ease;
+    }
+
+    .hint.fade {
+      opacity: 0;
+    }
+
+    /* LETTER OVERLAY */
+    .letter-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 18px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      background: radial-gradient(ellipse at 50% 30%, rgba(58, 31, 42, 0.65), rgba(36, 24, 32, 0.92));
+    }
+
+    .letter-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .letter-card {
+      background: var(--paper);
+      color: var(--ink);
+      width: min(560px, 100%);
+      max-height: 86vh;
+      overflow-y: auto;
+      border-radius: 6px;
+      padding: 46px 40px 40px;
+      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+      position: relative;
+      transform: translate3d(0, 30px, 0) scale(0.97);
+      transition: transform 0.5s cubic-bezier(.22, .8, .25, 1);
+      will-change: transform;
+    }
+
+    .letter-overlay.show .letter-card {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    .letter-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--envelope), var(--gold), var(--envelope));
+      border-radius: 6px 6px 0 0;
+      z-index: 2;
+    }
+
+    /* faint laid-paper lines + fold creases, like real stationery held up to light */
+    .letter-card::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 6px;
+      pointer-events: none;
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)) 0 33%/100% 1px no-repeat,
+        linear-gradient(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)) 0 66%/100% 1px no-repeat,
+        repeating-linear-gradient(0deg, rgba(139, 86, 58, 0.035) 0px, rgba(139, 86, 58, 0.035) 1px, transparent 1px, transparent 4px);
+    }
+
+    .letter-card>* {
+      position: relative;
+      z-index: 1;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(58, 42, 46, 0.08);
+      color: var(--ink-soft);
+      font-size: 17px;
+      cursor: pointer;
+      line-height: 1;
+      z-index: 5;
+    }
+
+    .close-btn:hover {
+      background: rgba(58, 42, 46, 0.16);
+    }
+
+    .letter-eyebrow {
+      font-family: 'Caveat', cursive;
+      color: var(--envelope);
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+
+    .letter-title {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-weight: 600;
+      font-size: 30px;
+      margin: 0 0 18px 0;
+      color: var(--ink);
+    }
+
+    .letter-body {
+      font-size: 19px;
+      line-height: 1.75;
+      white-space: pre-line;
+    }
+
+    .letter-signature {
+      font-family: 'Caveat', cursive;
+      font-size: 28px;
+      color: var(--envelope);
+      margin-top: 24px;
+      text-align: right;
+    }
+
+    .photo-row {
+      display: flex;
+      gap: 12px;
+      margin: 22px 0;
+      flex-wrap: wrap;
+    }
+
+    .photo-frame {
+      width: 110px;
+      height: 110px;
+      background: repeating-linear-gradient(45deg, #e2d3ba, #e2d3ba 8px, #d8c6a9 8px, #d8c6a9 16px);
+      border: 4px solid #fff;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+      transform: rotate(var(--r, -3deg));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--ink-soft);
+      text-align: center;
+      padding: 4px;
+      overflow: hidden;
+      border-radius: 2px;
+    }
+
+    .photo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .heart,
+      .flap,
+      .letter-peek,
+      .seal-half,
+      .letter-card,
+      .letter-overlay,
+      .scissor-handle {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useRef, useEffect, useCallback } = React;
+
+    /* ---------------------------------------------------------
+       PERSONALIZE EVERYTHING HERE
+    --------------------------------------------------------- */
+    const CONFIG = {
+      eyebrow: "a little something for you",
+      heading: "Happy Monthsary, Love",
+      letterEyebrow: "for the one who makes every ordinary day feel like a monthsary",
+      letterTitle: "5 months with you",
+      message:
+        `My Love,
+
+Five months in, and I still catch myself smiling at my phone like an idiot whenever you text me "good morning."
+
+I wanted to write this down properly instead of just saying it, because some things deserve more than a text message. Thank you for being patient with me, for laughing at my corny jokes, for choosing me on the ordinary days too, not just the special ones.
+
+Here's to more monthsaries, more inside jokes, more late night calls, and more us.
+
+I love you, today and every day after this one.`,
+      signature: "— always yours",
+      // Add your own photo URLs here if you want, e.g. "https://i.imgur.com/xxxx.jpg"
+      photos: [
+        "",
+        "",
+        ""
+      ],
+    };
+    /* --------------------------------------------------------- */
+
+    function useHearts(count = 16) {
+      return React.useMemo(() => {
+        return Array.from({ length: count }).map((_, i) => ({
+          id: i,
+          left: Math.random() * 100,
+          delay: Math.random() * 14,
+          duration: 10 + Math.random() * 10,
+          size: 12 + Math.random() * 14,
+          drift: (Math.random() * 80 - 40).toFixed(0) + "px",
+        }));
+      }, [count]);
+    }
+
+    function HeartsLayer() {
+      const hearts = useHearts(18);
+      return (
+        <div className="hearts-layer" aria-hidden="true">
+          {hearts.map(h => (
+            <div
+              key={h.id}
+              className="heart"
+              style={{
+                left: h.left + "%",
+                fontSize: h.size + "px",
+                animationDuration: h.duration + "s",
+                animationDelay: h.delay + "s",
+                "--drift": h.drift,
+              }}
+            >&#10084;</div>
+          ))}
+        </div>
+      );
+    }
+
+    function ScissorIcon() { return <span>&#9986;&#65039;</span>; }
+
+    function SealHalfIcon() {
+      return (
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 21s-7.5-4.6-9.6-9.3C.7 7.9 3 4.5 6.6 4.3c2 -.1 3.7 1 4.4 2.6.7-1.6 2.4-2.7 4.4-2.6 3.6.2 5.9 3.6 4.2 7.4C19.5 16.4 12 21 12 21z" fill="#fff" fillOpacity="0.9" />
+        </svg>
+      );
+    }
+
+    const CUT_THRESHOLD = 0.94;
+
+    function MonthsaryEnvelope() {
+      const [dragging, setDragging] = useState(false);
+      const [isCut, setIsCut] = useState(false);
+      const [flapOpen, setFlapOpen] = useState(false);
+      const [letterRise, setLetterRise] = useState(false);
+      const [showOverlay, setShowOverlay] = useState(false);
+      const [hintHidden, setHintHidden] = useState(false);
+
+      const zoneRef = useRef(null);
+      const handleRef = useRef(null);
+      const fillRef = useRef(null);
+
+      const draggingRef = useRef(false);
+      const isCutRef = useRef(false);
+      const progressRef = useRef(0);
+      const timersRef = useRef([]);
+
+      const clearTimers = () => {
+        timersRef.current.forEach(t => clearTimeout(t));
+        timersRef.current = [];
+      };
+
+      function triggerCut() {
+        if (isCutRef.current) return;
+        isCutRef.current = true;
+        draggingRef.current = false;
+        setDragging(false);
+        setIsCut(true);
+        if (fillRef.current) fillRef.current.style.width = "100%";
+        if (handleRef.current) handleRef.current.classList.add("hide");
+
+        timersRef.current.push(setTimeout(() => setFlapOpen(true), 300));
+        timersRef.current.push(setTimeout(() => setLetterRise(true), 750));
+        timersRef.current.push(setTimeout(() => setShowOverlay(true), 1500));
+      }
+
+      const handlePointerDown = useCallback((e) => {
+        if (isCutRef.current) return;
+        e.preventDefault();
+        zoneRef.current.setPointerCapture && zoneRef.current.setPointerCapture(e.pointerId);
+        draggingRef.current = true;
+        setDragging(true);
+        setHintHidden(true);
+        if (handleRef.current) handleRef.current.classList.remove("snap-back");
+      }, []);
+
+      const handlePointerMove = useCallback((e) => {
+        if (!draggingRef.current || isCutRef.current) return;
+        const rect = zoneRef.current.getBoundingClientRect();
+        let p = (e.clientX - rect.left) / rect.width;
+        p = Math.max(0, Math.min(1, p));
+        progressRef.current = p;
+
+        const travel = rect.width - 34;
+        if (handleRef.current) handleRef.current.style.left = (p * travel) + "px";
+        if (fillRef.current) fillRef.current.style.width = (p * 100) + "%";
+
+        if (p >= CUT_THRESHOLD) {
+          triggerCut();
+        }
+      }, []);
+
+      const handlePointerUp = useCallback(() => {
+        if (isCutRef.current) return;
+        draggingRef.current = false;
+        setDragging(false);
+        if (progressRef.current < CUT_THRESHOLD) {
+          progressRef.current = 0;
+          if (handleRef.current) {
+            handleRef.current.classList.add("snap-back");
+            handleRef.current.style.left = "0px";
+          }
+          if (fillRef.current) fillRef.current.style.width = "0%";
+        }
+      }, []);
+
+      function closeOverlay() {
+        setShowOverlay(false);
+
+        // 1. tuck the letter back down inside the envelope first
+        const t1 = setTimeout(() => {
+          setLetterRise(false);
+        }, 550);
+
+        // 2. only once it's safely hidden behind the envelope body, close the flap over it
+        const t2 = setTimeout(() => {
+          setFlapOpen(false);
+        }, 550 + 950);
+
+        // 3. once the flap has settled, restore the seal and cut controls
+        const t3 = setTimeout(() => {
+          isCutRef.current = false;
+          progressRef.current = 0;
+          setIsCut(false);
+          setHintHidden(false);
+          if (handleRef.current) {
+            handleRef.current.classList.remove("snap-back", "hide");
+            handleRef.current.style.left = "0px";
+          }
+          if (fillRef.current) {
+            fillRef.current.style.width = "0%";
+          }
+        }, 550 + 950 + 800);
+
+        timersRef.current.push(t1, t2, t3);
+      }
+
+      useEffect(() => () => clearTimers(), []);
+
+      return (
+        <div className="stage">
+          <div className="eyebrow">{CONFIG.eyebrow}</div>
+          <div className="title">{CONFIG.heading}</div>
+
+          <div className="envelope-wrap">
+            <div
+              className={"letter-peek" + (letterRise ? " rise" : "")}
+              style={{ transform: letterRise ? "translateX(-50%) translate3d(0,-220px,0) scale(1.02)" : "translateX(-50%) translate3d(0,0,0)" }}
+            />
+
+            <div className={"flap" + (flapOpen ? " opening" : "")}>
+              <div className="flap-shape" />
+            </div>
+
+            <div className={"torn-edge" + (isCut ? " show" : "")} />
+
+            <div className="envelope-body" />
+
+            <div
+              className="cut-zone"
+              ref={zoneRef}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+              style={{ display: isCut ? "none" : "block" }}
+            >
+              <div className="cut-line" />
+              <div className="cut-line-fill" ref={fillRef} />
+              <div className="scissor-handle" ref={handleRef}>
+                <ScissorIcon />
+              </div>
+            </div>
+
+            <div className="seal-graphic">
+              <div className={"seal-half seal-left" + (isCut ? " cut-left" : "")} />
+              <div className={"seal-half seal-right" + (isCut ? " cut-right" : "")} />
+              <div className={"seal-icon" + (isCut ? " cut" : "")}>
+                <SealHalfIcon />
+              </div>
+            </div>
+          </div>
+
+          <div className={"hint" + (hintHidden ? " fade" : "")}>
+            swipe the scissors across the seal, love ✂️
+          </div>
+
+          <div className={"letter-overlay" + (showOverlay ? " show" : "")}>
+            <div className="letter-card">
+              <button className="close-btn" onClick={closeOverlay} aria-label="Close letter">&#10005;</button>
+              <div className="letter-eyebrow">{CONFIG.letterEyebrow}</div>
+              <div className="letter-title">{CONFIG.letterTitle}</div>
+
+              {CONFIG.photos.filter(Boolean).length > 0 && (
+                <div className="photo-row">
+                  {CONFIG.photos.filter(Boolean).map((src, i) => (
+                    <div className="photo-frame" key={i} style={{ "--r": (i % 2 === 0 ? "-4deg" : "3deg") }}>
+                      <img src={src} alt="" />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="letter-body">{CONFIG.message}</div>
+              <div className="letter-signature">{CONFIG.signature}</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      return (
+        <div className="scene">
+          <HeartsLayer />
+          <MonthsaryEnvelope />
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+
+</html>
