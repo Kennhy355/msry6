@@ -156,7 +156,16 @@
 
     /* the letter, folded in thirds like a real inserted letter - fully hidden
      behind the envelope body (z-index 0) until it's pulled out, when it
-     gets promoted above everything via .letter-peek.rise */
+     gets promoted above everything via .letter-peek.rise.
+
+     IMPORTANT FIX: the base rule used to delay the z-index drop by 0.9s,
+     which meant that on close the letter stayed ABOVE the envelope for the
+     entire slide-down animation and only "popped" invisible at the very end.
+     Now the z-index change is instant on close (no transition on it in the
+     base rule), so as soon as the letter starts sliding back down it is
+     rendered BEHIND the opaque envelope body and gets visually swallowed by
+     it as it descends past the envelope's top edge - i.e. it actually looks
+     like it's being tucked inside the envelope, instead of just vanishing. */
     .letter-peek {
       position: absolute;
       left: 50%;
@@ -171,7 +180,7 @@
       border-radius: 2px;
       box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 8px 20px rgba(0, 0, 0, 0.3);
       transform: translateX(-50%) translate3d(0, 0, 0);
-      transition: transform 0.9s cubic-bezier(.22, .8, .25, 1), z-index 0s 0.9s;
+      transition: transform 0.9s cubic-bezier(.22, .8, .25, 1);
       z-index: 0;
       will-change: transform;
     }
@@ -507,6 +516,82 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      display: block;
+    }
+
+    /* shown instead of a broken image icon when a photo fails to load
+       (e.g. a bare local filename like "wow.png" that the browser can't
+       resolve) - keeps the little scrapbook look intact either way */
+    .photo-fallback {
+      font-size: 30px;
+      color: var(--envelope);
+      opacity: 0.55;
+    }
+
+    /* MUSIC PLAYER - sits on the letter itself */
+    .music-player {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin: 22px 0;
+      padding: 10px 10px 10px 16px;
+      background: rgba(138, 59, 75, 0.08);
+      border: 1px solid rgba(201, 162, 75, 0.45);
+      border-radius: 30px;
+    }
+
+    .music-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .music-note {
+      color: var(--envelope);
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .music-title {
+      font-family: 'Caveat', cursive;
+      font-size: 20px;
+      color: var(--ink-soft);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .music-controls {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .music-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: none;
+      background: var(--envelope);
+      color: var(--paper);
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s ease, transform 0.15s ease;
+    }
+
+    .music-btn:hover {
+      background: var(--envelope-dark);
+      transform: scale(1.06);
+    }
+
+    .music-btn:active {
+      transform: scale(0.94);
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -539,26 +624,40 @@
        PERSONALIZE EVERYTHING HERE
     --------------------------------------------------------- */
     const CONFIG = {
-      eyebrow: "a little something for you",
-      heading: "Happy Monthsary, Love",
+
+      heading: "What's this?🤔🤔",
       letterEyebrow: "for the one who makes every ordinary day feel like a monthsary",
-      letterTitle: "5 months with you",
+      letterTitle: "Our 6th monthsary🫨😮",
       message:
-        `My Love,
-
-Five months in, and I still catch myself smiling at my phone like an idiot whenever you text me "good morning."
-
-I wanted to write this down properly instead of just saying it, because some things deserve more than a text message. Thank you for being patient with me, for laughing at my corny jokes, for choosing me on the ordinary days too, not just the special ones.
-
-Here's to more monthsaries, more inside jokes, more late night calls, and more us.
-
-I love you, today and every day after this one.`,
+        `To my beautiful girlfriend, happy 6th monthsary sa atin!! i know its just a monthsary and its not that special but i want you to know that i really love you and thank you for everything!!thank you for making me happy every single day and thank you for being there for me always. I loveeeee youuuu`,
       signature: "— always yours",
-      // Add your own photo URLs here if you want, e.g. "https://i.imgur.com/xxxx.jpg"
+
+      // PHOTOS: bare filenames like "wow.png" will NOT load here, because
+      // this page has no server behind it to fetch local files from - the
+      // browser has nowhere to look for "wow.png" and the image just breaks.
+      // Use one of these instead:
+      //   1) A full hosted URL, e.g. "https://i.imgur.com/xxxxxxx.jpg"
+      //   2) A base64 data URI, e.g. "data:image/png;base64,iVBORw0KG..."
+      // Any entry that still fails to load will now show a small heart
+      // instead of a broken-image icon, so it never looks broken.
       photos: [
-        "",
-        "",
-        ""
+        "heart.png.avif",
+        "baby1.jpg",
+        "ako.jpg",
+        "baby2.jpg",
+        "ako2.jpg",
+        "baby3.jpg",
+        "heart2.png.jpg"
+
+      ],
+
+      // MUSIC: add your song(s) here. "src" needs to be a direct playable
+      // audio URL or a base64 data URI (same rule as photos above - a bare
+      // filename won't resolve). Add as many tracks as you want; the next
+      // button cycles through them in order and loops back to the start.
+      tracks: [
+        { title: "Our Song", src: "Rob Deniel - Ang Pag-ibig (Instrumental).mp3 " },
+        { title: "nagkavirus PCko sakakadownload ng music😭😭", src: "" },
       ],
     };
     /* --------------------------------------------------------- */
@@ -604,6 +703,95 @@ I love you, today and every day after this one.`,
         <svg viewBox="0 0 24 24" fill="none">
           <path d="M12 21s-7.5-4.6-9.6-9.3C.7 7.9 3 4.5 6.6 4.3c2 -.1 3.7 1 4.4 2.6.7-1.6 2.4-2.7 4.4-2.6 3.6.2 5.9 3.6 4.2 7.4C19.5 16.4 12 21 12 21z" fill="#fff" fillOpacity="0.9" />
         </svg>
+      );
+    }
+
+    // Renders a single scrapbook photo. If the given src is empty, missing,
+    // or fails to load (broken/unresolvable path), it falls back to a small
+    // heart icon instead of showing an ugly broken-image glyph.
+    function PhotoFrame({ src, rotate }) {
+      const [failed, setFailed] = useState(false);
+      const showImage = src && !failed;
+
+      return (
+        <div className="photo-frame" style={{ "--r": rotate }}>
+          {showImage ? (
+            <img src={src} alt="" onError={() => setFailed(true)} />
+          ) : (
+            <span className="photo-fallback">&#10084;</span>
+          )}
+        </div>
+      );
+    }
+
+    // Little music bar for the letter: play/pause toggle + next track.
+    // Automatically pauses itself when the letter overlay is closed so
+    // music doesn't keep playing invisibly in the background.
+    function MusicPlayer({ tracks, active }) {
+      const [index, setIndex] = useState(0);
+      const [playing, setPlaying] = useState(false);
+      const audioRef = useRef(null);
+
+      const current = tracks && tracks[index];
+
+      useEffect(() => {
+        if (!audioRef.current) return;
+        if (playing && current && current.src) {
+          audioRef.current.play().catch(() => setPlaying(false));
+        } else {
+          audioRef.current.pause();
+        }
+      }, [playing, index]);
+
+      useEffect(() => {
+        if (!active && audioRef.current) {
+          audioRef.current.pause();
+          setPlaying(false);
+        }
+      }, [active]);
+
+      if (!tracks || tracks.length === 0) return null;
+
+      function togglePlay() {
+        if (!current || !current.src) return;
+        setPlaying(p => !p);
+      }
+
+      function nextTrack() {
+        setIndex(i => (i + 1) % tracks.length);
+        setPlaying(true);
+      }
+
+      return (
+        <div className="music-player">
+          <div className="music-info">
+            <span className="music-note">&#9835;</span>
+            <span className="music-title">{current ? current.title : "Our Song"}</span>
+          </div>
+          <div className="music-controls">
+            <button
+              className="music-btn"
+              onClick={togglePlay}
+              aria-label={playing ? "Pause" : "Play"}
+              title={playing ? "Pause" : "Play"}
+            >
+              {playing ? "\u275A\u275A" : "\u25B6"}
+            </button>
+            <button
+              className="music-btn"
+              onClick={nextTrack}
+              aria-label="Next track"
+              title="Next track"
+            >
+              &#9197;
+            </button>
+          </div>
+          <audio
+            ref={audioRef}
+            src={current ? current.src : undefined}
+            onEnded={nextTrack}
+          />
+        </div>
       );
     }
 
@@ -763,7 +951,7 @@ I love you, today and every day after this one.`,
           </div>
 
           <div className={"hint" + (hintHidden ? " fade" : "")}>
-            swipe the scissors across the seal, love ✂️
+            Care swiping
           </div>
 
           <div className={"letter-overlay" + (showOverlay ? " show" : "")}>
@@ -772,12 +960,12 @@ I love you, today and every day after this one.`,
               <div className="letter-eyebrow">{CONFIG.letterEyebrow}</div>
               <div className="letter-title">{CONFIG.letterTitle}</div>
 
+              <MusicPlayer tracks={CONFIG.tracks} active={showOverlay} />
+
               {CONFIG.photos.filter(Boolean).length > 0 && (
                 <div className="photo-row">
                   {CONFIG.photos.filter(Boolean).map((src, i) => (
-                    <div className="photo-frame" key={i} style={{ "--r": (i % 2 === 0 ? "-4deg" : "3deg") }}>
-                      <img src={src} alt="" />
-                    </div>
+                    <PhotoFrame key={i} src={src} rotate={i % 2 === 0 ? "-4deg" : "3deg"} />
                   ))}
                 </div>
               )}
